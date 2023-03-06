@@ -1,0 +1,29 @@
+---
+- name: Install lvm2
+  yum:
+    name: lvm2
+    state: present
+
+- name: Create the Volume Group
+  lvg:
+    vg: BK
+    pvs: /dev/sdb
+- name: Create Logical Volume
+  lvol:
+    lv: BoBack
+    vg: BK
+    size: 2G
+    pvs: /dev/sdb
+    state: present
+- name: Format the disk
+  filesystem:
+    dev: /dev/BK/BoBack
+    fstype: ext4
+- name: Mount the disk
+  mount:
+    fstype: ext4
+    src: /dev/BK/BoBack
+    state: mounted
+    path: /var/backup
+...
+

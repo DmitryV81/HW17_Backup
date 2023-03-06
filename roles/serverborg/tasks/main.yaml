@@ -1,0 +1,61 @@
+---
+- name: Install epel-release
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install borgbackup
+  yum:
+    name: borgbackup
+    state: present
+
+- name: Create user borg
+  user:
+    name: borg
+    createhome: yes
+    home: /home/borg
+    state: present
+
+- name: chown borg to /var/backup
+  file:
+    path: /var/backup
+    state: directory
+    recurse: yes
+    owner: borg
+    group: borg
+    mode: '0700'
+
+- name: Create directory .ssh on user borg
+  file:
+    path: /home/borg/.ssh
+    state: directory
+    recurse: yes
+    owner: borg
+    group: borg
+    mode: '0700'
+
+- name: Create file authorized_keys in /home/borg/.ssh/
+  copy:
+    src: authorized_keys
+    dest: /home/borg/.ssh/authorized_keys
+    owner: borg
+    group: borg
+    mode: '0700'
+
+- name: Delete subdir in /var/backup
+  file:
+    state: absent
+    path: /var/backup/lost+found
+
+- name: Set locale LANG=en_US.UTF-8
+  shell: export LANG=en_US.UTF-8
+  become: true
+  become_user: root
+
+- name: init borg repo
+  shell: |
+    export BORG_PASSPHRASE='Otus1234'
+    borg init --encryption=repokey /var/backup/    
+  become: yes
+  become_user: borg
+...

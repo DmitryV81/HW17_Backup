@@ -1,0 +1,35 @@
+---
+- name: Mount disk backup
+  hosts: backup
+  become: true
+  roles:
+  - mntdisk
+  - serverborg
+- name: Install borg on client
+  hosts: client
+  become: true
+  roles:
+  - clientborg
+
+#- hosts: client
+#  become: true
+#  tasks:
+#    - name: generate key pair
+#      shell: ssh-keygen -b 2048 -t rsa -f /home/borg/.ssh/id_rsa -q -N /dev/null
+#      args:
+#        creates: /home/borg/.ssh/id_rsa
+#    - name: test public ley
+#      shell: ssh-keygen -l -f /home/borg/.ssh/id_rsa.pub
+#      changed_when: false
+#    - name: retrieve public key
+#      shell: cat /home/borg/.ssh/id_rsa.pub
+#      register: master_public_key
+#      changed_when: false
+#- hosts: backup
+#  become: true
+#  tasks:
+#    - name: add public key to backupserver
+#      authorized_key:
+#        user: borg
+#        key: "{{ hostvars['client'].master_public_key.stdout }}"
+...

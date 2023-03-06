@@ -1,0 +1,77 @@
+---
+- name: Install epel-release
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install borgbackup
+  yum:
+    name: borgbackup
+    state: present
+
+- name: Create directory .ssh on user root
+  file:
+    path: /root/.ssh
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Copy key files id_rsa in /root/.ssh/
+  copy:
+    src: id_rsa
+    dest: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Copy key files id_rsa.pub in /root/.ssh/
+  copy:
+    src: id_rsa.pub
+    dest: /root/.ssh/id_rsa.pub
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy ssh config
+  copy:
+    src: ssh_config
+    dest: /etc/ssh/ssh_config
+   
+#################################################################################
+
+- name: Set locale LANG=en_US.UTF-8
+  shell: export LANG=en_US.UTF-8
+  become: true
+  become_user: root
+
+- name: create borg-backup.service
+  copy:
+    src: borg-backup.service
+    dest: /etc/systemd/system/borg-backup.service
+
+- name: create borg-backup.timer
+  copy:
+    src: borg-backup.timer
+    dest: /etc/systemd/system/borg-backup.timer
+    
+- name: Changing perm of borg-backup.service
+  file: dest=/etc/systemd/system/borg-backup.service mode=a+x
+
+- name: Changing perm of borg-backup.timer
+  file: dest=/etc/systemd/system/borg-backup.timer mode=a+x
+
+- name: Start service borg-backup.timer
+  systemd:
+    name: borg-backup.timer
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Start service borg-backup.service
+  systemd:
+    name: borg-backup.service
+    state: started
+    enabled: yes
+...
